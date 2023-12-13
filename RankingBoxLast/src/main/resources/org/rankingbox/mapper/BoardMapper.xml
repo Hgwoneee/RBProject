@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.rankingbox.mapper.BoardMapper">
+
+	<insert id="create">
+		insert into board (title, content, writer)
+		values(#{title},#{content}, #{writer})
+	</insert>
+
+	<select id="read" resultType="org.rankingbox.domain.BoardVO">
+		select
+		bno, title, content, writer,
+		regdate, viewcnt , replycnt
+		from
+		board
+		where bno = #{bno}
+	</select>
+
+	<select id="listAll" resultType="org.rankingbox.domain.BoardVO">
+ 	<![CDATA[
+ 		select 
+   		bno, title, content, writer, regdate, viewcnt 
+ 		from 
+   		board 
+ 		where bno > 0 
+ 		order by bno desc, regdate desc
+ 	]]>
+	</select>
+
+	<select id="listPage" resultType="org.rankingbox.domain.BoardVO">
+ 	<![CDATA[
+ 		select 
+   		*
+ 		from 
+   		(select rownum rn, A.*
+   		from ( select * from board  order by bno desc, regdate desc) A
+   		)
+ 		where bno > 0 and
+ 		rn between #{page} and #10 
+ 	]]>
+	</select>
+
+	<select id="listCriteria"
+		resultType="org.rankingbox.domain.BoardVO">
+	<![CDATA[
+ 		select 
+  		*
+ 		from 
+   		(select rownum rn, A.*
+   		from ( select * from board  order by bno desc, regdate desc) A
+   		)
+ 		where bno > 0 and
+ 		rn between #{pageStart} and #{perPageNum}
+ 	]]>
+	</select>
+
+
+
+
+	<update id="update">
+		update board set title = #{title}, content
+		= #{content}
+		where bno = #{bno}
+	</update>
+
+	<delete id="delete">
+		delete from board where bno = #{bno}
+	</delete>
+
+
+
+	<select id="countPaging" resultType="int">
+ 	<![CDATA[
+ 		select 
+   		count(bno) 
+ 		from 
+   		board 
+ 		where 
+   		bno > 0 
+ 	]]>
+	</select>
+
+
+
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 't'.toString()">
+				and title like '%' || #{keyword} || '%'
+			</if>
+			<if test="searchType == 'c'.toString()">
+				and content like '%' || #{keyword} || '%'
+			</if>
+			<if test="searchType == 'w'.toString()">
+				and writer like '%' || #{keyword} || '%'
+			</if>
+			<if test="searchType == 'tc'.toString()">
+				and (title like '%' || #{keyword} || '%' OR content like
+				'%' ||
+				#{keyword} || '%')
+			</if>
+			<if test="searchType == 'cw'.toString()">
+				and (content like '%' || #{keyword} || '%' OR writer like
+				'%' ||
+				#{keyword} || '%')
+			</if>
+			<if test="searchType == 'tcw'.toString()">
+				and (title like '%' || #{keyword} || '%' OR content like
+				'%' ||
+				#{keyword} || '%' OR writer like '%' || #{keyword} || '%')
+			</if>
+		</if>
+	</sql>
+
+
+
+	<!-- <sql id="search"> <if test="searchType != null"> <if test="searchType 
+		== 't'.toString()"> and title like CONCAT('%', #{keyword}, '%') </if> <if 
+		test="searchType == 'c'.toString()"> and content like CONCAT('%', #{keyword}, 
+		'%') </if> <if test="searchType == 'w'.toString()"> and writer like CONCAT('%', 
+		#{keyword}, '%') </if> <if test="searchType == 'tc'.toString()"> and ( title 
+		like CONCAT('%', #{keyword}, '%') OR content like CONCAT('%', #{keyword}, 
+		'%')) </if> <if test="searchType == 'cw'.toString()"> and ( content like 
+		CONCAT('%', #{keyword}, '%') OR writer like CONCAT('%', #{keyword}, '%')) 
+		</if> <if test="searchType == 'tcw'.toString()"> and ( title like CONCAT('%', 
+		#{keyword}, '%') OR content like CONCAT('%', #{keyword}, '%') OR writer like 
+		CONCAT('%', #{keyword}, '%')) </if> </if> </sql> -->
+
+
+
+
+	<select id="listSearch"
+		resultType="org.rankingbox.domain.BoardVO">
+    <![CDATA[
+    SELECT *
+    FROM (
+        SELECT 
+            rownum rn, A.*
+        FROM (
+            SELECT * 
+            FROM board
+            WHERE bno > 0
+            ]]>
+		<!-- 여기서부터는 검색 조건을 적용합니다 -->
+
+		<include refid="search"></include>
+    
+    <![CDATA[
+            ORDER BY bno DESC
+        ) A
+    )
+    WHERE rn BETWEEN #{pageStart}+1 AND #{perPageNum}+#{pageStart}
+    ]]>
+	</select>
+
+
+
+
+
+
+
+	<select id="listSearchCount" resultType="int">
+<![CDATA[  
+  select count(bno) 
+  from board 
+  where bno > 0 
+]]>
+		<include refid="search"></include>
+
+	</select>
+
+
+
+	<update id="updateReplyCnt">
+		update board set replycnt = replycnt + #{param2}
+		where bno = #{param1}
+	</update>
+
+
+	<update id="updateViewCnt">
+		update board set viewcnt = viewcnt +1 where bno =
+		#{bno}
+	</update>
+
+
+
+	<insert id="addAttach">
+		insert into attach(fullname, bno) values
+		(#{fullName},
+		board_seq.currval)
+	</insert>
+
+
+
+
+	<select id="getAttach" resultType="string">
+		select fullname from
+		attach
+		where bno = #{bno} order by regdate
+	</select>
+
+
+	<delete id="deleteAttach">
+		delete from attach where bno = #{bno}
+	</delete>
+
+	<insert id="replaceAttach">
+		insert into attach(fullname, bno) values
+		(#{param1}, #{param2})
+	</insert>
+
+
+</mapper>
