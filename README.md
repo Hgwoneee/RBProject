@@ -5,7 +5,7 @@
 ## 프레임워크 / 언어 / 개발환경
 - Spring Legacy / Java / STS
 ## 시연동영상
-https://youtu.be/F-7U2uUm3aY?si=HtSKNcBCeUgTa4Z7
+[https://youtu.be/F-7U2uUm3aY?si=HtSKNcBCeUgTa4Z7](https://youtu.be/KJ8j6afg89M)
 ## 개요
 <p align="center">
   <img width="750" height="500" src="./랭킹박스/개요.png">
